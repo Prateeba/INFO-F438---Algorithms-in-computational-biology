@@ -8,6 +8,16 @@ from glob import glob
 import copy 
 
 
+import numpy as np
+import networkx as nx
+from networkx.drawing.nx_agraph import write_dot, graphviz_layout
+import matplotlib.pyplot as plt
+from sys import argv
+import argparse
+from glob import glob
+import copy 
+
+
 def load_args():
 	parser = argparse.ArgumentParser(description='Loads path of the data set')
 	parser.add_argument('path')
@@ -18,6 +28,7 @@ def load_dat(path):
 	data = None
 	with open(path) as f:
 		n = int(f.readline().strip()[len('param n := '):-1])
+		r = int(f.readline().split(':=')[1])
 		data = []
 		f.readline()  # ignore line 'param c := '
 		for line in f:
@@ -252,11 +263,12 @@ class minimum_colourful_subtree:
 				data2 = [res[1], res[3], self.get_weight(res[1], res[3])]
 				if data2 :
 					self.add_edge_to_graph(data2, self.insertion_graph)
-
+                    
 				#remove ux for all x \in T for which w(v,x) > w(u,x)
 				for i in self.insertion_graph.nodes : 
 					if (self.get_weight(res[1], i) > self.get_weight(res[0],i)) : 
-						self.insertion_graph.remove_edge(res[0], i)
+						if self.insertion_graph.has_edge(res[0], i) : 
+							self.insertion_graph.remove_edge(res[0], i)
 						nodes = list(self.insertion_graph)
 						if res[0] not in nodes : 
 							self.insertion_graph.remove_node(res[0])
@@ -334,24 +346,22 @@ class minimum_colourful_subtree:
 
 
 
+
 if __name__ == '__main__':
 
-	args = load_args()
-	print(args)
-	edges = load_dat(args.path)
-	initial_colour_assignment = color_assignment(args.color)
+	edges = load_dat("./dataset/MCS10_1.dat")
+	initial_colour_assignment = color_assignment("./dataset/MCS10_1c.dat")	
+	print("------------------------initial_colour_assignment--------------------------------------")
 	print(initial_colour_assignment)
-	
-	c_set = ["red", "blue", "yellow", "green", "orange"]
-	
+	c_set = list(set(initial_colour_assignment)) #["red", "blue", "yellow", "green", "orange"]
 	initial_graph = minimum_colourful_subtree(edges,initial_colour_assignment,c_set)
-	
-	#initial_graph.kruskal_style()
 
+	
+	initial_graph.kruskal_style()
 	#initial_graph.prim_style()
 
 	#initial_graph.top_down()
 
 	#initial_graph.insertion()
 
-	initial_graph.critcal_path()
+	#initial_graph.critcal_path()
